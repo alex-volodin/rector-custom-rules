@@ -8,8 +8,6 @@ use A;
 use PhpParser\Node;
 use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
 use Rector\Core\Rector\AbstractRector;
-use Rector\NodeRemoval\NodeRemover;
-use Rector\NodeTypeResolver\Node\AttributeKey;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 use Webmozart\Assert\Assert;
@@ -17,16 +15,12 @@ use Webmozart\Assert\Assert;
 class RemoveAllPublicStaticMethodRector extends AbstractRector implements ConfigurableRectorInterface
 {
     public const CLASSES = 'classes';
-    private const PUBLIC_STATIC = 1;
+    private const PUBLIC_STATIC = 9;
 
     /**
      * @var array<string>
      */
     private array $classes = [];
-
-    public function __construct(private NodeRemover $remover)
-    {
-    }
 
     /**
      * @param array<string, array<string>> $configuration
@@ -80,24 +74,6 @@ class RemoveAllPublicStaticMethodRector extends AbstractRector implements Config
         foreach ($keys as $key) {
             unset($node->stmts[$key]);
         }
-
-//        $classNode = $this->betterNodeFinder->findParentType($node, Node\Stmt\Class_::class);
-//        if (!$classNode instanceof Node\Stmt\Class_) {
-//            return null;
-//        }
-//
-//        if (!in_array($classNode->name->name, $this->classes)) {
-//            return null;
-//        }
-//
-//        if ($node->flags === self::PUBLIC_STATIC) {
-//
-////            foreach ((array)$classNode->stmts as $key => $stmt)
-//
-//
-//            $this->remover->removeNode($node);
-////            $this->nodesToRemoveCollector->addNodeToRemove($node);
-//        }
 
         return $node;
     }
