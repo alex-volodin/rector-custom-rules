@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RectorCustomRules\Rule;
+namespace RectorCustomRules\Rule\CustomEnumToPhpEnum;
 
 use A;
 use PhpParser\Node;

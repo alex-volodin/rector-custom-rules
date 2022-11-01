@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RectorCustomRules\Rule\RemoveAllPublicStaticMethodRector;
+namespace Skyeng\MarketingCmsBundle\Utils\Rector\Tests\ReplaceStringWithConstRector;
 
 use Rector\Testing\PHPUnit\AbstractRectorTestCase;
 
-final class RemoveAllPublicStaticMethodRectorTest extends AbstractRectorTestCase
+final class ReplaceStringWithConstRectorTest extends AbstractRectorTestCase
 {
     /**
      * @dataProvider provideData()
@@ -18,7 +18,7 @@ final class RemoveAllPublicStaticMethodRectorTest extends AbstractRectorTestCase
 
     public function provideData(): \Iterator
     {
-        return $this->yieldFilesFromDirectory(__DIR__.'/Fixture');
+        return $this->yieldFilesFromDirectory(__DIR__ . '/Fixture');
     }
 
     public function provideConfigFilePath(): string

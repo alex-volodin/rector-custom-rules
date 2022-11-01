@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RectorCustomRules\Rule\StaticMethodToConstRector;
+namespace RectorCustomRules\Tests\Rule\CustomEnumToPhpEnum\PublishConstRector;
 
 use Rector\Testing\PHPUnit\AbstractRectorTestCase;
 
-final class StaticMethodToConstRectorTest extends AbstractRectorTestCase
+final class PublishConstRectorTest extends AbstractRectorTestCase
 {
     /**
      * @dataProvider provideData()
@@ -18,11 +18,11 @@ final class StaticMethodToConstRectorTest extends AbstractRectorTestCase
 
     public function provideData(): \Iterator
     {
-        return $this->yieldFilesFromDirectory(__DIR__.'/Fixture');
+        return $this->yieldFilesFromDirectory(__DIR__ . '/Fixture');
     }
 
     public function provideConfigFilePath(): string
     {
-        return __DIR__.'/config/config.php';
+        return __DIR__ . '/config/config.php';
     }
 }

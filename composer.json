@@ -8,6 +8,11 @@
             "RectorCustomRules\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "RectorCustomRules\\Tests\\": "tests/"
+        }
+    },
     "authors": [
         {
             "name": "Alexander Volodin",
@@ -21,8 +26,9 @@
         "phpstan/phpstan": "^1.8"
     },
     "scripts": {
-        "show-node": "vendor/bin/print-node-instantiation-code",
-        "parse": "vendor/bin/php-parse -j"
+        "print-node": "vendor/bin/print-node-instantiation-code",
+        "parse": "vendor/bin/php-parse -j",
+        "test": "vendor/bin/phpunit tests/"
     },
     "require-dev": {
         "nikic/php-parser": "^4.15",
