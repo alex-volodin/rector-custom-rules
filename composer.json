@@ -1,5 +1,5 @@
 {
-    "name": "alex/rector-custom-rules",
+    "name": "alex-volodin/rector-custom-rules",
     "description": "Rector custom rules",
     "type": "library",
     "license": "MIT",
