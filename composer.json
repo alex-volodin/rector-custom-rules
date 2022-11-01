@@ -1,0 +1,38 @@
+{
+    "name": "alex/rector-custom-rules",
+    "description": "Rector custom rules",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "RectorCustomRules\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RectorCustomRules\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Alexander Volodin",
+            "email": "a.volodin@skyeng.ru"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "rector/rector": "^0.14",
+        "webmozart/assert": "^1.11",
+        "phpstan/phpstan": "^1.8"
+    },
+    "scripts": {
+        "print-node": "vendor/bin/print-node-instantiation-code",
+        "parse": "vendor/bin/php-parse -j",
+        "test": "vendor/bin/phpunit tests/"
+    },
+    "require-dev": {
+        "nikic/php-parser": "^4.15",
+        "matthiasnoback/php-parser-instantiation-printer": "^0.2.0",
+        "phpunit/phpunit": "^9.5"
+    }
+}
