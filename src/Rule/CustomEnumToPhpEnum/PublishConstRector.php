@@ -56,7 +56,7 @@ class PublishConstRector extends AbstractRector implements ConfigurableRectorInt
             return null;
         }
 
-        if (!in_array($parent->name->name, $this->classes)) {
+        if (!in_array($this->getName($parent), $this->classes)) {
             return null;
         }
 

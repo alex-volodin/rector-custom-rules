@@ -49,7 +49,7 @@ class RemoveAllPublicStaticMethodRector extends AbstractRector implements Config
      */
     public function refactor(Node $node) : ?Node
     {
-        if (!in_array($node->name->name, $this->classes)) {
+        if (!in_array($this->getName($node), $this->classes)) {
             return null;
         }
 
