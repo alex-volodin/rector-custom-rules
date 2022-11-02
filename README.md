@@ -4,4 +4,4 @@
 
 ### Установка
 
-`composer require alex-volodin/rector-custom-rules ^dev-master --dev`
+`composer require alex-volodin/rector-custom-rules dev-main --dev`
