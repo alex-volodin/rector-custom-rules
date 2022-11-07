@@ -24,8 +24,7 @@ class GetterToPublicPropertyUsageRector extends AbstractRector
      */
     public function refactor(Node $node): ?Node
     {
-
-        return null;
+        return $this->nodeFactory->createPropertyFetch();
     }
 
     public function getRuleDefinition(): RuleDefinition

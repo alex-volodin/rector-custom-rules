@@ -8,19 +8,19 @@ use PhpParser\Node;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Property;
 use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\Visibility;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 
-class PublishPropertyForSimpleGetterRector extends AbstractRector
+class PublishPropertyRector extends AbstractRector
 {
     private VisibilityManipulator $visibilityManipulator;
 
     public function __construct(
         VisibilityManipulator $visibilityManipulator,
-    )
-    {
+    ) {
         $this->visibilityManipulator = $visibilityManipulator;
     }
 
@@ -34,7 +34,7 @@ class PublishPropertyForSimpleGetterRector extends AbstractRector
 
     public function getRuleDefinition(): RuleDefinition
     {
-        return new RuleDefinition('Publish property for simple getter', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Publish property for easy getter/setter', [new CodeSample(<<<'CODE_SAMPLE'
 private $name;
 public function getName()
 {
@@ -60,33 +60,53 @@ CODE_SAMPLE
      */
     public function refactor(Node $node): ?Node
     {
-        if ($node->isPublic()) {
+        if ($this->visibilityManipulator->hasVisibility($node, Visibility::PUBLIC)) {
             return null;
         }
 
-        if (!$node->isReadonly() && !$this->hasSimpleGetterAndSetter($node)) {
+        if ($node instanceof Param) {
+            $constructNode = $node->getAttribute(AttributeKey::PARENT_NODE);
+
+            if (!$constructNode instanceof Node\Stmt\ClassMethod || $constructNode->name->name !== '__construct') {
+                return null;
+            }
+
+            $classNode = $this->betterNodeFinder->findParentType($node, Node\Stmt\ClassLike::class);
+        } else {
+            $classNode = $node->getAttribute(AttributeKey::PARENT_NODE);
+        }
+
+        if (!$classNode instanceof Node\Stmt\Class_) {
             return null;
         }
 
-        $this->visibilityManipulator->makePublic($node);
+        if (!$this->hasSimpleGetterAndSetter($classNode, $node)) {
+            return null;
+        }
+
+        if ($node instanceof Param) {
+            if ($node->flags & Visibility::PROTECTED) {
+                $node->flags -= Visibility::PROTECTED;
+            } else {
+                $node->flags -= Visibility::PRIVATE;
+            }
+
+            $node->flags |= Visibility::PUBLIC;
+        } else {
+            $this->visibilityManipulator->changeNodeVisibility($node, Visibility::PUBLIC);
+        }
 
         return $node;
     }
 
-    private function hasSimpleGetterAndSetter(Node\Stmt\Property $node): bool
+    private function hasSimpleGetterAndSetter(Node\Stmt\Class_ $classNode, Property|Param $node): bool
     {
-        $parent = $node->getAttribute(AttributeKey::PARENT_NODE);
-
-        if (!$parent instanceof Node\Stmt\Class_) {
-            return false;
-        }
-
         $propertyName = $this->getName($node);
 
         $getterName = 'get'.ucwords($propertyName);
         $setterName = 'set'.ucwords($propertyName);
 
-        foreach ($parent->stmts as $stmt) {
+        foreach ($classNode->stmts as $stmt) {
             if ($stmt instanceof Node\Stmt\ClassMethod) {
                 if ($stmt->name->name === $getterName && !$this->isEasyGetterMethod($stmt, $node)) {
                     return false;
@@ -99,9 +119,48 @@ CODE_SAMPLE
         return true;
     }
 
-    public function isEasySetterMethod(Node\Stmt\ClassMethod $methodNode, string $propertyName): bool
+    public function isEasyGetterMethod(Node\Stmt\ClassMethod $methodNode, Property|Param $node): bool
     {
-        if ($methodNode->returnType !== null && $methodNode->returnType->name !== 'void') {
+        if ($methodNode->returnType !== null && $methodNode->returnType->name !== $node->getType()) {
+            return false;
+        }
+
+        if ($methodNode->params !== []) {
+            return false;
+        }
+
+        if (count($methodNode->stmts) !== 1) {
+            return false;
+        }
+
+        $returnNode = $methodNode->stmts[0] ?? null;
+
+        if (!$returnNode instanceof Node\Stmt\Return_) {
+            return false;
+        }
+
+        $propertyFetchNode = $returnNode->expr;
+
+        if (!$propertyFetchNode instanceof Node\Expr\PropertyFetch) {
+            return false;
+        }
+
+        if (!$propertyFetchNode->var instanceof Node\Expr\Variable || $propertyFetchNode->var->name !== 'this') {
+            return false;
+        }
+
+        if (!$propertyFetchNode->name instanceof Node\Identifier || $propertyFetchNode->name->name !== $this->getName($node)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isEasySetterMethod(Node\Stmt\ClassMethod $methodNode, string $nodeName): bool
+    {
+        if ($methodNode->returnType instanceof Node\Identifier && $methodNode->returnType->name !== 'void') {
+            return false;
+        } elseIf ($methodNode->returnType !== null) {
             return false;
         }
 
@@ -135,48 +194,11 @@ CODE_SAMPLE
             return false;
         }
 
-        if (!$propertyFetchNode->name instanceof Node\Identifier || $propertyFetchNode->name->name !== $propertyName) {
+        if (!$propertyFetchNode->name instanceof Node\Identifier || $propertyFetchNode->name->name !== $nodeName) {
             return false;
         }
 
         if (!$assignNode->expr instanceof Node\Expr\Variable || $assignNode->expr->name !== $methodNode->params[0]?->var->name) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public function isEasyGetterMethod(Node\Stmt\ClassMethod $methodNode, Property $propertyNode): bool
-    {
-        if ($methodNode->returnType !== null && $methodNode->returnType->name !== $propertyNode->getType()) {
-            return false;
-        }
-
-        if ($methodNode->params === []) {
-            return false;
-        }
-
-        if (count($methodNode->stmts) !== 1) {
-            return false;
-        }
-
-        $returnNode = $methodNode->stmts[0] ?? null;
-
-        if (!$returnNode instanceof Node\Stmt\Return_) {
-            return false;
-        }
-
-        $propertyFetchNode = $returnNode->expr;
-
-        if (!$propertyFetchNode instanceof Node\Expr\PropertyFetch) {
-            return false;
-        }
-
-        if (!$propertyFetchNode->var instanceof Node\Expr\Variable || $propertyFetchNode->var->name !== 'this') {
-            return false;
-        }
-
-        if (!$propertyFetchNode->name instanceof Node\Identifier || $propertyFetchNode->name->name !== $this->getName($propertyNode)) {
             return false;
         }
 

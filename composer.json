@@ -28,7 +28,7 @@
     "scripts": {
         "print-node": "vendor/bin/print-node-instantiation-code",
         "parse": "vendor/bin/php-parse -j",
-        "test": "vendor/bin/phpunit tests/"
+        "test": "vendor/bin/phpunit"
     },
     "require-dev": {
         "nikic/php-parser": "^4.15",
